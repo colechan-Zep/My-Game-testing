@@ -3,51 +3,46 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>WeChat Final Force</title>
+    <title>WeChat Final Diagnostic</title>
     
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     
     <style>
-      /* 1. 將背景設為黑色！如果畫面變黑，代表 CSS 成功生效 */
-      body, html {
-        background-color: black !important;
+      /* 1. 關鍵：背景改回透明，唔好遮住相機 */
+      html, body {
+        background-color: transparent !important;
         margin: 0;
         overflow: hidden;
       }
       
-      /* 2. 測試文字：層級設為最高 (999999)，紅色 */
+      /* 2. 診斷面板：顯示相機的具體數據 */
       #debug-text {
         position: fixed;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        color: red;
-        font-size: 24px;
-        font-weight: bold;
-        z-index: 999999 !important;
-        background: white;
-        padding: 10px;
-        border: 2px solid red;
+        top: 20px; left: 20px;
+        color: lime; /* 螢光綠色字 */
+        background: rgba(0,0,0,0.7);
+        padding: 15px;
+        font-family: monospace;
+        font-size: 14px;
+        z-index: 999999;
+        pointer-events: none;
+        white-space: pre; /* 保留換行 */
       }
 
-      /* 3. 強制 Video 顯示 */
+      /* 3. 相機影片層 */
       #arjs-video {
-        z-index: 1 !important; /* 放在中間 */
-      }
-      
-      /* 4. A-Frame 場景設為透明，放在 Video 上面 */
-      .a-canvas {
-        z-index: 999 !important;
-        background-color: transparent !important;
+        z-index: -100 !important;
+        display: block !important;
       }
     </style>
   </head>
   
   <body>
-    <div id="debug-text">初始化中...</div>
+    <div id="debug-text">初始化系統...</div>
 
     <a-scene embedded 
-             arjs="sourceType: webcam; debugUIEnabled: false; sourceWidth:640; sourceHeight:480; displayWidth: 640; displayHeight: 480;"
+             arjs="sourceType: webcam; debugUIEnabled: false;"
              vr-mode-ui="enabled: false"
              renderer="alpha: true; logarithmicDepthBuffer: true;">
       
@@ -59,36 +54,38 @@
     </a-scene>
 
     <script>
-      // 暴力修正腳本
       var debugText = document.getElementById('debug-text');
-      var checkCount = 0;
-
-      // 每 1 秒檢查一次狀態
+      
+      // 每 0.5 秒檢查一次相機狀態
       setInterval(function() {
-        checkCount++;
         var video = document.getElementById('arjs-video');
         
         if (video) {
-          // 找到了 Video 元素
-          debugText.innerHTML = "找到相機! (" + checkCount + ")";
+          var w = video.videoWidth;
+          var h = video.videoHeight;
+          var state = video.readyState; // 0=無數據, 4=播放中
           
-          // 強制修正樣式 (防止被 WeChat 樣式覆蓋)
-          video.style.display = 'block';
-          video.style.position = 'absolute';
-          video.style.top = '0px';
-          video.style.left = '0px';
-          video.style.width = '100%';
-          video.style.height = '100%';
-          video.style.zIndex = '-100'; // 推到底層
-          video.style.objectFit = 'cover';
+          debugText.innerHTML = 
+            "相機元素: 找到\n" +
+            "狀態代碼: " + state + " (目標:4)\n" +
+            "解析度: " + w + " x " + h + "\n" +
+            "背景透明: 是";
+
+          // 如果狀態係 0 (無數據)，強制叫佢播放
+          if (state === 0) {
+             video.play().catch(function(e){ 
+                console.log("Play error"); 
+             });
+          }
           
-          // 觸發重繪
-          window.dispatchEvent(new Event('resize'));
+          // 強制樣式修正
+          video.style.opacity = "1";
+          video.style.zIndex = "-100";
+          
         } else {
-          // 找不到 Video
-          debugText.innerHTML = "搜尋相機中... (" + checkCount + ")";
+          debugText.innerHTML = "相機元素: 搜尋中...";
         }
-      }, 1000);
+      }, 500);
     </script>
   </body>
 </html>
