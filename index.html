@@ -3,32 +3,54 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AR Test Fixed</title>
     
-    <title>AR Test</title>
-    
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://unpkg.com/aframe@1.2.0/dist/aframe-master.min.js"></script>
+    <script src="https://unpkg.com/ar.js@3.3.2/aframe/build/aframe-ar-nft.js"></script>
     
     <style>
-      body { margin: 0; overflow: hidden; }
-      #arjs-video { position: absolute !important; top: 0; left: 0; width: 100% !important; height: 100% !important; z-index: -1; }
+      body { margin: 0; overflow: hidden; font-family: sans-serif; }
+      
+      /* 2. 加一個「除錯層」：如果見到藍色按鈕，代表網頁載入成功，只係相機未開 */
+      #start-screen {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.9); z-index: 9999;
+        display: flex; justify-content: center; align-items: center; flex-direction: column;
+      }
+      button { padding: 15px 30px; font-size: 20px; background: #007AFF; color: white; border: none; border-radius: 50px; }
     </style>
   </head>
   
-  <body style="margin: 0; overflow: hidden;">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" 
-             renderer="logarithmicDepthBuffer: true;"
-             vr-mode-ui="enabled: false">
-      
-      <a-marker preset="hiro">
-        <a-image src="text.png" 
-                 position="0 0 0" 
-                 rotation="-90 0 0" 
-                 scale="2 1 1"></a-image>
-                 
-        </a-marker>
+  <body>
+    <div id="start-screen">
+      <h1>AR 測試</h1>
+      <p>請點擊下方按鈕開始</p>
+      <button onclick="startAR()">開啟相機</button>
+    </div>
+
+    <a-scene embedded 
+             arjs="sourceType: webcam; debugUIEnabled: false; sourceWidth:640; sourceHeight:480; displayWidth: 640; displayHeight: 480;"
+             vr-mode-ui="enabled: false"
+             id="scene"
+             visible="false"> <a-marker preset="hiro">
+         <a-text value="WORK LA!" position="0 0.5 0" rotation="-90 0 0" color="red" align="center" scale="3 3 3"></a-text>
+         <a-box position="0 0 0" material="color: blue; opacity: 0.5;"></a-box>
+      </a-marker>
 
       <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+      function startAR() {
+        // 隱藏啟動畫面
+        document.getElementById('start-screen').style.display = 'none';
+        // 顯示 AR 場景
+        var scene = document.getElementById('scene');
+        scene.setAttribute('visible', 'true');
+        
+        // 強制刷新相機信號
+        window.dispatchEvent(new Event('resize'));
+      }
+    </script>
   </body>
 </html>
