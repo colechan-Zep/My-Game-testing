@@ -3,87 +3,80 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>WeChat Final Diagnostic</title>
+    <title>WeChat Resolution Check</title>
     
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     
     <style>
-      /* 1. 關鍵：背景改回透明，唔好遮住相機 */
-      html, body {
-        background-color: transparent !important;
-        margin: 0;
-        overflow: hidden;
-      }
+      body { margin: 0; overflow: hidden; background: orange; } /* 背景設橙色，如果見到橙色即係CSS運作中 */
       
-      /* 2. 診斷面板：顯示相機的具體數據 */
-      #debug-text {
-        position: fixed;
-        top: 20px; left: 20px;
-        color: lime; /* 螢光綠色字 */
-        background: rgba(0,0,0,0.7);
-        padding: 15px;
-        font-family: monospace;
-        font-size: 14px;
-        z-index: 999999;
-        pointer-events: none;
-        white-space: pre; /* 保留換行 */
+      /* 診斷文字：超大，置中 */
+      #info {
+        position: fixed; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 24px; color: white; background: black;
+        padding: 20px; z-index: 99999; text-align: center;
+        border: 4px solid white;
       }
 
-      /* 3. 相機影片層 */
+      /* 強制 Video 顯示 */
       #arjs-video {
-        z-index: -100 !important;
+        position: absolute !important;
+        top: 0; left: 0; width: 100% !important; height: 100% !important;
+        z-index: 1 !important; /* 放在中間 */
+        background: transparent !important;
         display: block !important;
+      }
+
+      /* 強制 3D Canvas 半透明，讓我們看穿它！ */
+      canvas.a-canvas {
+        opacity: 0.3 !important; /* 透明度 30% */
+        z-index: 999 !important; /* 放在最頂 */
+        background: transparent !important;
       }
     </style>
   </head>
   
   <body>
-    <div id="debug-text">初始化系統...</div>
+    <div id="info">讀取數據中...</div>
 
     <a-scene embedded 
              arjs="sourceType: webcam; debugUIEnabled: false;"
              vr-mode-ui="enabled: false"
              renderer="alpha: true; logarithmicDepthBuffer: true;">
-      
       <a-marker preset="hiro">
-        <a-box position="0 0.5 0" material="color: yellow; opacity: 0.8;" animation="property: rotation; to: 0 360 0; loop: true; dur: 3000"></a-box>
+        <a-box position="0 0.5 0" material="color: red;"></a-box>
       </a-marker>
-      
       <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-      var debugText = document.getElementById('debug-text');
+      var infoBox = document.getElementById('info');
       
-      // 每 0.5 秒檢查一次相機狀態
       setInterval(function() {
         var video = document.getElementById('arjs-video');
-        
         if (video) {
           var w = video.videoWidth;
           var h = video.videoHeight;
-          var state = video.readyState; // 0=無數據, 4=播放中
+          var ready = video.readyState;
           
-          debugText.innerHTML = 
-            "相機元素: 找到\n" +
-            "狀態代碼: " + state + " (目標:4)\n" +
-            "解析度: " + w + " x " + h + "\n" +
-            "背景透明: 是";
-
-          // 如果狀態係 0 (無數據)，強制叫佢播放
-          if (state === 0) {
-             video.play().catch(function(e){ 
-                console.log("Play error"); 
-             });
+          // 顯示核心數據
+          infoBox.innerHTML = 
+            "解析度: " + w + " x " + h + "<br>" +
+            "狀態: " + ready + " (4=播放中)<br>" +
+            "綠燈: 應該已著";
+            
+          // 如果解析度係 0，嘗試強制重啟
+          if (w === 0 || h === 0) {
+             infoBox.style.color = "red"; // 紅字代表有問題
+             video.play();
+          } else {
+             infoBox.style.color = "#00ff00"; // 綠字代表正常
+             infoBox.innerHTML += "<br>相機運作正常！<br>如果你見唔到畫面<br>即係被遮住咗";
           }
-          
-          // 強制樣式修正
-          video.style.opacity = "1";
-          video.style.zIndex = "-100";
-          
         } else {
-          debugText.innerHTML = "相機元素: 搜尋中...";
+          infoBox.innerHTML = "找不到相機元素";
         }
       }, 500);
     </script>
