@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MindAR Fix Check</title>
+    <title>MindAR Fix Final</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-image-aframe.prod.js"></script>
     
@@ -72,14 +72,14 @@
       startButton.addEventListener('click', () => {
         startButton.innerText = "載入中...";
         
-        // 1. 強制播放 video
+        // 強制播放 video
         const video = document.querySelector('video');
         if (video) {
             video.play();
             video.style.opacity = "1";
         }
 
-        // 2. 隱藏按鈕
+        // 隱藏按鈕
         setTimeout(() => {
             startButton.style.display = 'none';
         }, 1000);
@@ -91,10 +91,10 @@
         document.documentElement.style.background = "transparent";
       });
       
-      // 監聽錯誤 (關鍵修正：直接彈窗話你知咩事)
+      // 監聽錯誤：如果有錯會彈窗
       sceneEl.addEventListener("arError", (event) => {
-        alert("AR 出錯: " + event.detail.error); // 手機彈窗
-        startButton.innerText = "載入失敗";
+        alert("AR 出錯: " + event.detail.error);
+        startButton.innerText = "檔案讀取失敗";
         startButton.style.background = "black";
       });
     </script>
